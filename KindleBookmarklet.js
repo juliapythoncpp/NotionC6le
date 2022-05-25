@@ -61,12 +61,7 @@ try{
     "min-width: 250px;margin-left: -125px;background-color: #333;color: #f22;text-align: center;border-radius: 2px;padding: 16px;position: fixed;z-index: 1;left: 50%;top: 30px;font-size: 17px;";
   document.body.appendChild(toast);
 
-  setTimeout(function () { toast.remove(); }, 2000);
-
-  let script = document.createElement("script");
-  script.type = "text/javascript";
-  script.textContent = 'alert("OK");';
-  document.body.appendChild(script);
+  setTimeout(function () { toast.remove(); }, 3000);
 
 }catch(err){
   alert(err);
