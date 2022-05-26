@@ -6,7 +6,7 @@ module.exports = {
   },
   output: {
     filename: "highlightsToNotion.bundle.js",
-    path: path.resolve(__dirname, "."),
+    path: path.resolve(__dirname, "./dist/"),
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
