@@ -1,7 +1,7 @@
 import { extractBook, parseBook, Notion } from "./models";
 import { showToast, updateToast } from "./utils";
 
-const writeHighlightsToNotion = async (apiKey: string, bookDbId: string) => {
+export async function writeHighlightsToNotion(apiKey: string, bookDbId: string) {
 
   showToast("");
 
@@ -15,5 +15,3 @@ const writeHighlightsToNotion = async (apiKey: string, bookDbId: string) => {
 
   updateToast("&#128158; &#128018; &#128150;");
 };
-
-export default writeHighlightsToNotion;
