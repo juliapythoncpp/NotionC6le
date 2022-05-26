@@ -1,19 +1,19 @@
 import { extractBook, parseBook, Notion } from "./models";
 import { showToast, updateToast } from "./utils";
 
-export default class HighlightsToNotion {
-  public async writeHighlightsToNotion(apiKey: string, bookDbId: string) {
+const writeHighlightsToNotion = async (apiKey: string, bookDbId: string) => {
 
-    showToast("");
+  showToast("");
 
-    const notion = new Notion(apiKey, bookDbId);
+  const notion = new Notion(apiKey, bookDbId);
 
-    const book = extractBook();
-    const clippings = parseBook(book);
-    if (clippings != undefined){
-      await notion.syncHighlights(clippings);
-    }
-
-    updateToast("&#128158; &#128018; &#128150;");
+  const book = extractBook();
+  const clippings = parseBook(book);
+  if (clippings != undefined) {
+    await notion.syncHighlights(clippings);
   }
-}
+
+  updateToast("&#128158; &#128018; &#128150;");
+};
+
+export default writeHighlightsToNotion;

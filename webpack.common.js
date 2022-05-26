@@ -5,8 +5,9 @@ module.exports = {
     main: "./src/index.ts",
   },
   output: {
-    filename: "highlightsToNotion.bundle.js",
+    filename: "highlightsToNotion.js",
     path: path.resolve(__dirname, "./dist/"),
+    library: "highlightsToNotion",
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
