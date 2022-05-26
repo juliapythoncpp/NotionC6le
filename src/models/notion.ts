@@ -1,10 +1,9 @@
-require("dotenv").config();
+// require("dotenv").config();
 import { NotionAdapter } from "../adapters";
-import { GroupedClipping } from "../interfaces";
+import { BlockSpec, Book } from "../interfaces";
 import { CreatePageParams, Emoji, BlockType } from "../interfaces";
 import {
   makeHighlightsBlocks,
-  updateSync,
   getUnsyncedHighlights,
   makeBlocks,
 } from "../utils";
@@ -23,7 +22,7 @@ export class Notion {
       filter: {
         or: [
           {
-            property: "Book Name",
+            property: "book",
             text: {
               equals: bookName,
             },
@@ -31,54 +30,71 @@ export class Notion {
         ],
       },
     });
-    const [book] = response.results;
+    const [book]: any[] = response.results;
     if (book) {
-      return book.id;
+      return {
+        id: book.id,
+        SyncHash: book.properties.sync.rich_text[0].text.content
+      };
     } else {
       return null;
     }
   };
 
   /* Method to sync highlights to notion */
-  syncHighlights = async (books: GroupedClipping[]) => {
+  syncHighlights = async (book: Book) => {
     try {
-      // get unsynced highlights from each book
-      const unsyncedBooks = getUnsyncedHighlights(books);
-      // if unsynced books are present
-      if (unsyncedBooks.length > 0) {
-        console.log("\n🚀 Syncing highlights to Notion");
-        for (const book of unsyncedBooks) {
-          console.log(`\n🔁 Syncing book: ${book.title}`);
-          const bookId = await this.getIdFromBookName(book.title);
-          // if the book is already present in Notion
-          if (bookId) {
-            console.log(`📚 Book already present, appending highlights`);
-            // append unsynced highlights at the end of the page
-            await this.notion.appendBlockChildren(
-              bookId,
-              makeBlocks(book.highlights, BlockType.quote)
-            );
-          } else {
-            console.log(`📚 Book not present, creating notion page`);
-            const createPageParams: CreatePageParams = {
-              parentDatabaseId: process.env.BOOK_DB_ID as string,
-              properties: {
-                title: book.title,
-                author: book.author,
-                bookName: book.title,
-              },
-              children: makeHighlightsBlocks(book.highlights, BlockType.quote),
-              icon: Emoji["🔖"],
-            };
-            // if the book page doesn't exist in notion, create a new notion page for the book
-            await this.notion.createPage(createPageParams);
-          }
-          // after each book is successfully synced, update the sync metadata (cache)
-          updateSync(book);
+      console.log(`\n🔁 Syncing book: ${book.title}`);
+      let _bookDb = await this.getIdFromBookName(book.title);
+      let bookId = _bookDb?.id;
+      const sync = getUnsyncedHighlights(book, _bookDb?.SyncHash ?? "0:");
+      if (bookId && sync.needsFullSync) {
+        console.log(`⚠️  Highlights changed, book will be deleted!`);
+        await this.notion.archivePage(bookId);
+        bookId = undefined;
+      }
+
+      if (sync.highlights.length > 0) {
+        let highlights: BlockSpec[] = sync.highlights.map(c => ({text:c.highlight, color: c.color}));
+        if (bookId) {
+          console.log(`📚 Book already present, appending highlights`);
+          await this.notion.appendBlockChildren(
+            bookId,
+            makeBlocks(highlights, BlockType.quote)
+          );
+
+          await this.notion.updatePage({
+            pageId: bookId,
+            properties: {
+              title: sync.title,
+              bookName: sync.title,
+              author: sync.author,
+              hash: sync.hash,
+              bookUrl: sync.bookUrl,
+            },
+            isDelete: false,
+          });
+        } else {
+          console.log(`📚 Book not present, creating notion page`);
+          const createPageParams: CreatePageParams = {
+            parentDatabaseId: process.env.BOOK_DB_ID as string,
+            properties: {
+              title: sync.title,
+              author: sync.author,
+              bookName: sync.title,
+              hash: sync.hash,
+              bookUrl: sync.bookUrl,
+              imgUrl: sync.imgUrl,
+            },
+            children: makeHighlightsBlocks(highlights, BlockType.quote),
+            icon: Emoji["📖"], //🔖
+            cover: undefined
+          };
+          await this.notion.createPage(createPageParams);
         }
         console.log("\n✅ Successfully synced highlights to Notion");
       } else {
-        console.log("🟢 Every book is already synced!");
+        console.log("🟢 Book is already synced!");
       }
     } catch (error: unknown) {
       console.error("❌ Failed to sync highlights", error);

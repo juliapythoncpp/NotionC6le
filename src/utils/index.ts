@@ -1,7 +1,9 @@
 export {
   writeToFile,
   readFromFile,
-  updateSync,
+  getFilePath,
   getUnsyncedHighlights,
+  getBookJsonFilename,
+  computeHighlightsHash
 } from "./common";
 export { makeBlocks, makeHighlightsBlocks, makePageProperties } from "./notion";

@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 import { Client } from "@notionhq/client";
 import {
   GetDatabaseResponse,
@@ -9,10 +9,11 @@ import {
   GetPageResponse,
   QueryDatabaseParameters,
   CreatePageResponse,
+  UpdatePageResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import _ from "lodash";
-import { writeToFile, makePageProperties } from "../utils";
-import { Block, CreatePageParams } from "../interfaces";
+// import _ from "lodash";
+import { makePageProperties } from "../utils"; //writeToFile
+import { Block, CreatePageParams, UpdatePageParams } from "../interfaces";
 
 /* Adapter to interact with Notion API directly */
 export class NotionAdapter {
@@ -28,7 +29,7 @@ export class NotionAdapter {
       const response = await this.notion.databases.retrieve({
         database_id: databaseId,
       });
-      writeToFile(response, "get-db-response.json", "data");
+      // writeToFile(response, "get-db-response.json", "data");
       return response;
     } catch (error: unknown) {
       console.error("Failed to get database", error);
@@ -42,7 +43,7 @@ export class NotionAdapter {
   ): Promise<QueryDatabaseResponse> => {
     try {
       const response = await this.notion.databases.query(query);
-      writeToFile(response, "query-db-response.json", "data");
+      // writeToFile(response, "query-db-response.json", "data");
       return response;
     } catch (error: unknown) {
       console.error("Failed to query database", error);
@@ -56,7 +57,7 @@ export class NotionAdapter {
       const response = await this.notion.blocks.retrieve({
         block_id: blockId,
       });
-      writeToFile(response, "get-block-response.json", "data");
+      // writeToFile(response, "get-block-response.json", "data");
       return response;
     } catch (error: unknown) {
       console.error("Failed to get block", error);
@@ -86,7 +87,7 @@ export class NotionAdapter {
           results: [...blockChildren.results, ...remainingBlocks.results],
         };
       }
-      writeToFile(blockChildren, "get-block-children-response.json", "data");
+      // writeToFile(blockChildren, "get-block-children-response.json", "data");
       return blockChildren;
     } catch (error: unknown) {
       console.error("Failed to get block children", error);
@@ -117,7 +118,7 @@ export class NotionAdapter {
       const response = await this.notion.pages.retrieve({
         page_id: pageId,
       });
-      writeToFile(response, "get-page-response.json", "data");
+      // writeToFile(response, "get-page-response.json", "data");
       return response;
     } catch (error: unknown) {
       console.error("Failed to get page", error);
@@ -155,11 +156,47 @@ export class NotionAdapter {
       }
 
       const response = await this.notion.pages.create(page);
-      writeToFile(response, "create-page-response.json", "data");
+      // writeToFile(response, "create-page-response.json", "data");
       return response;
     } catch (error: unknown) {
       console.error("Failed to create page", error);
       throw error;
     }
   };
+
+  updatePage = async ( updatePageParams: UpdatePageParams ): Promise<UpdatePageResponse> => {
+    try {
+      if(updatePageParams.isDelete){
+        return await this.notion.pages.update({
+          page_id: updatePageParams.pageId,
+          archived: true
+        });
+      }else{
+        const page: any = {
+          page_id: updatePageParams.pageId,
+          properties: makePageProperties(updatePageParams.properties),
+        };
+        return await this.notion.pages.update(page);
+      }
+    } catch (error: unknown) {
+      console.error("Failed to archive page", error);
+      throw error;
+    }
+  };
+
+  /* Method to get a Notion page */
+  archivePage = async (pageId: string): Promise<GetPageResponse> => {
+    try {
+      const response = await this.notion.pages.update({
+        page_id: pageId,
+        archived: true
+      });
+      // writeToFile(response, "get-page-response.json", "data");
+      return response;
+    } catch (error: unknown) {
+      console.error("Failed to archive page", error);
+      throw error;
+    }
+  };
+
 }

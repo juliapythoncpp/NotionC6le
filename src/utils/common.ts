@@ -1,7 +1,9 @@
 import path from "path";
 import { readFileSync, writeFileSync } from "fs";
-import { GroupedClipping, Sync } from "../interfaces";
-import _ from "lodash";
+import { Book, BookSync, Clipping } from "../interfaces";
+import * as crypto from 'crypto';
+
+export const md5 = (contents: string) => crypto.createHash('md5').update(contents).digest("hex");
 
 /* Function to write to a file given the file, fileName and optionally the dirName */
 export const writeToFile = (
@@ -10,79 +12,44 @@ export const writeToFile = (
   dirName: string
 ): void => {
   writeFileSync(
-    path.join(path.dirname(__dirname), `../${dirName}/${fileName}`),
+    getFilePath(fileName, dirName),
     JSON.stringify(file)
   );
 };
 
+export const getBookJsonFilename = (book: Book) => 
+  `${book.title}_${book.author}.json`.replace(/[^a-z0-9\.]/gi, "-");
+
+export const getFilePath = (fileName: string, dirName?: string) => 
+  dirName == null ? fileName : path.join(dirName, fileName);
+
 /* Function to read a file given the fileName and optionally the dirName */
-export const readFromFile = (fileName: string, dirName: string): string => {
-  return readFileSync(
-    path.join(path.dirname(__dirname), `../${dirName}/${fileName}`),
-    "utf-8"
-  );
+export const readFromFile = (fileName: string, dirName?: string): string => {
+  return readFileSync( getFilePath(fileName, dirName), "utf-8" );
 };
 
-/* Function to update the sync cache after every book is successfully synced */
-export const updateSync = (book: GroupedClipping) => {
-  const oldSync: Sync[] = JSON.parse(readFromFile("sync.json", "cache"));
-  const bookSync = _.find(oldSync, { title: book.title });
-  let newSync: Sync[] = [];
-  if (bookSync) {
-    _.remove(oldSync, { title: book.title });
-    newSync = [
-      ...oldSync,
-      {
-        title: book.title,
-        author: book.author,
-        highlightCount: bookSync.highlightCount + book.highlights.length,
-      },
-    ];
-  } else {
-    newSync = [
-      ...oldSync,
-      {
-        title: book.title,
-        author: book.author,
-        highlightCount: book.highlights.length,
-      },
-    ];
-  }
-  writeToFile(newSync, "sync.json", "cache");
-};
+export const computeHighlightsHash = (clips: Clipping[], n: number | undefined = undefined): string => {
+  n ??= clips.length;
+  const hash = md5(clips.slice(0, n - 1).map(c => `${c.highlight},${c.location},${c.color}`).join());
+  return `${n}:${hash}`;
+}
 
 /* Function to get unsynced highlights for each book */
-export const getUnsyncedHighlights = (books: GroupedClipping[]) => {
-  // read the sync metadata (cache)
-  const sync: Sync[] = JSON.parse(readFromFile("sync.json", "cache"));
-  const unsyncedHighlights: GroupedClipping[] = [];
-  // if some books were synced earlier
-  if (sync.length > 0) {
-    console.log("\n🟢 Books already synced:\n");
-    for (const book of books) {
-      // find the sync metadata for the book
-      const bookSync = _.find(sync, { title: book.title });
-      // if the book was synced earlier
-      if (bookSync) {
-        // if new highlights have been added to the book
-        if (book.highlights.length > bookSync.highlightCount) {
-          // only new highlights should be synced
-          unsyncedHighlights.push({
-            ...book,
-            highlights: book.highlights.slice(bookSync.highlightCount),
-          });
-        } else {
-          console.log(`📖 ${book.title}`);
-        }
-      } else {
-        // if the book wasn't synced earlier, every highlight should be synced
-        unsyncedHighlights.push(book);
-      }
+export const getUnsyncedHighlights = (book: Book, hash: string): BookSync => {
+  const clips = book.highlights;
+  const n = Number.parseInt(hash.split(':')[0]);
+  const h = computeHighlightsHash(book.highlights, n);
+  const fullSync = h != hash;
+  if(!fullSync){
+    return {
+      ...book,
+      highlights: clips.slice(n+1),
+      needsFullSync: false
     }
-    console.log("--------------------------------------");
-    return unsyncedHighlights;
-  } else {
-    // if no books were synced earlier, every book should be synced
-    return books;
+  }else{
+    return {
+      ...book,
+      needsFullSync: true
+    }
   }
 };

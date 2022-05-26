@@ -1,20 +1,18 @@
 export interface Clipping {
-  title: string;
-  author: string;
-  location: string;
-  date: string;
-  time: string;
+  location: number;
+  color: string;
   highlight: string;
 }
 
-export interface GroupedClipping {
+export interface Book {
   title: string;
   author: string;
-  highlights: string[];
+  highlights: Clipping[];
+  hash: string;
+  bookUrl: string | undefined;
+  imgUrl: string | undefined;
 }
 
-export interface Sync {
-  title: string;
-  author: string;
-  highlightCount: number;
+export interface BookSync extends Book {
+  needsFullSync: boolean;
 }

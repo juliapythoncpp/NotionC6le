@@ -1,8 +1,10 @@
-export { Clipping, GroupedClipping, Sync } from "./clipping";
+export { Clipping, Book, BookSync } from "./clipping";
 export {
   Block,
+  BlockSpec,
   BlockType,
   CreatePageParams,
   Emoji,
   CreatePageProperties,
+  UpdatePageParams
 } from "./notion";
