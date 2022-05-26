@@ -1,16 +1,19 @@
+import { BlockType } from "./notion";
+
 export interface Clipping {
-  location: number;
+  text: string;
+  location?: number;
+  type?: BlockType;
   color: string;
-  highlight: string;
 }
 
 export interface Book {
   title: string;
   author: string;
-  highlights: Clipping[];
+  clips: Clipping[];
+  bookUrl: string;
+  imgUrl?: string;
   hash: string;
-  bookUrl: string | undefined;
-  imgUrl: string | undefined;
 }
 
 export interface BookSync extends Book {

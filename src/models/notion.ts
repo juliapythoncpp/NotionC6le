@@ -1,24 +1,27 @@
 // require("dotenv").config();
 import { NotionAdapter } from "../adapters";
-import { BlockSpec, Book } from "../interfaces";
+import { Book } from "../interfaces";
 import { CreatePageParams, Emoji, BlockType } from "../interfaces";
 import {
   makeHighlightsBlocks,
   getUnsyncedHighlights,
   makeBlocks,
+  updateToast
 } from "../utils";
 
 export class Notion {
   private notion;
+  private bookDbId : string;
 
-  constructor() {
-    this.notion = new NotionAdapter();
+  constructor(apiKey: string, bookDbId: string) {
+    this.notion = new NotionAdapter(apiKey);
+    this.bookDbId = bookDbId;
   }
 
   /* Method to get Notion block id of the Notion page given the book name */
   getIdFromBookName = async (bookName: string) => {
     const response = await this.notion.queryDatabase({
-      database_id: process.env.BOOK_DB_ID as string,
+      database_id: this.bookDbId,
       filter: {
         or: [
           {
@@ -44,23 +47,22 @@ export class Notion {
   /* Method to sync highlights to notion */
   syncHighlights = async (book: Book) => {
     try {
-      console.log(`\n🔁 Syncing book: ${book.title}`);
+      updateToast(`<br>🔁 Syncing book: ${book.title}`);
       let _bookDb = await this.getIdFromBookName(book.title);
       let bookId = _bookDb?.id;
       const sync = getUnsyncedHighlights(book, _bookDb?.SyncHash ?? "0:");
       if (bookId && sync.needsFullSync) {
-        console.log(`⚠️  Highlights changed, book will be deleted!`);
+        updateToast(`<br>⚠️  Highlights changed, book will be deleted!`);
         await this.notion.archivePage(bookId);
         bookId = undefined;
       }
 
-      if (sync.highlights.length > 0) {
-        let highlights: BlockSpec[] = sync.highlights.map(c => ({text:c.highlight, color: c.color}));
+      if (sync.clips.length > 0) {
         if (bookId) {
-          console.log(`📚 Book already present, appending highlights`);
+          updateToast(`<br>📚 Book already present, appending highlights`);
           await this.notion.appendBlockChildren(
             bookId,
-            makeBlocks(highlights, BlockType.quote)
+            makeBlocks(sync.clips, BlockType.quote)
           );
 
           await this.notion.updatePage({
@@ -75,9 +77,9 @@ export class Notion {
             isDelete: false,
           });
         } else {
-          console.log(`📚 Book not present, creating notion page`);
+          updateToast(`<br>📚 Book not present, creating notion page`);
           const createPageParams: CreatePageParams = {
-            parentDatabaseId: process.env.BOOK_DB_ID as string,
+            parentDatabaseId: this.bookDbId,
             properties: {
               title: sync.title,
               author: sync.author,
@@ -86,21 +88,19 @@ export class Notion {
               bookUrl: sync.bookUrl,
               imgUrl: sync.imgUrl,
             },
-            children: makeHighlightsBlocks(highlights, BlockType.quote),
+            children: makeHighlightsBlocks(sync.clips, BlockType.quote),
             icon: Emoji["📖"], //🔖
             cover: undefined
           };
           await this.notion.createPage(createPageParams);
         }
-        console.log("\n✅ Successfully synced highlights to Notion");
+        updateToast("<br>✅ Successfully synced highlights to Notion");
       } else {
-        console.log("🟢 Book is already synced!");
+        updateToast("<br>🟢 Book is already synced!");
       }
     } catch (error: unknown) {
-      console.error("❌ Failed to sync highlights", error);
+      updateToast("<br>❌ Failed to sync highlights");
       throw error;
-    } finally {
-      console.log("--------------------------------------");
     }
   };
 }

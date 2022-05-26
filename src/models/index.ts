@@ -1,2 +1,3 @@
 export { Notion } from "./notion";
-export { Parser } from "./parser";
+export { parseBook } from "./parser";
+export { extractBook } from "./book_extractor";

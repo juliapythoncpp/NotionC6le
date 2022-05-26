@@ -14,6 +14,7 @@ export enum BlockType {
   heading_1 = "heading_1",
   heading_2 = "heading_2",
   heading_3 = "heading_3",
+  bulleted_list_item = "bulleted_list_item",
   paragraph = "paragraph",
 }
 
@@ -24,6 +25,7 @@ export enum Emoji {
 }
 
 export interface BlockSpec {
+  type?: BlockType;
   text: string;
   color?: string;
 }
@@ -35,6 +37,7 @@ export interface Block {
   heading_1?: Text;
   heading_2?: Text;
   heading_3?: Text;
+  bulleted_list_item?: Text;
 }
 
 export interface CreatePageProperties {

@@ -19,8 +19,8 @@ import { Block, CreatePageParams, UpdatePageParams } from "../interfaces";
 export class NotionAdapter {
   private notion: Client;
 
-  constructor() {
-    this.notion = new Client({ auth: process.env.NOTION_API_KEY });
+  constructor(apiKey: string) {
+    this.notion = new Client({ auth: apiKey });
   }
 
   /* Method to get a Notion database */

@@ -2,11 +2,12 @@ import { Block, BlockSpec, BlockType, CreatePageProperties } from "../interfaces
 
 /* Function to make an array of Notion blocks given the array of highlights and the block type
    Used when appending highlights to an existing Notion page for the book */
-export const makeBlocks = (highlights: BlockSpec[], type: BlockType): Block[] => {
+export const makeBlocks = (clips: BlockSpec[], defaultType: BlockType): Block[] => {
   const blocks: Block[] = [];
-  for (const highlight of highlights) {
+  for (const c of clips) {
+    const type = c.type ?? defaultType;
     const validHighlight =
-      highlight.text.length > 2000 ? highlight.text.substring(0, 2000) : highlight.text;
+      c.text.length > 2000 ? c.text.substring(0, 2000) : c.text;
     const block: Block = {
       object: "block",
       type,
@@ -21,7 +22,7 @@ export const makeBlocks = (highlights: BlockSpec[], type: BlockType): Block[] =>
           },
         },
       ],
-      color: highlight.color,
+      color: c.color,
     };
     blocks.push(block);
   }

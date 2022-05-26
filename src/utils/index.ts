@@ -1,9 +1,3 @@
-export {
-  writeToFile,
-  readFromFile,
-  getFilePath,
-  getUnsyncedHighlights,
-  getBookJsonFilename,
-  computeHighlightsHash
-} from "./common";
+export { getUnsyncedHighlights, computeHighlightsHash } from "./common";
 export { makeBlocks, makeHighlightsBlocks, makePageProperties } from "./notion";
+export { showToast, updateToast, cleanup } from "./browser";
