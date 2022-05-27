@@ -12,7 +12,7 @@ export namespace ExtractorRegistry {
   };
   
   export function extract(){
-    const domain = window.location.hostname.split('.').slice(2).join('.');
+    const domain = window.location.hostname.split('.').slice(3).join('.');
     let extractor = extractors[domain];
     return extractor();
   }
