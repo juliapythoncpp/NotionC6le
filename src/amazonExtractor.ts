@@ -2,7 +2,7 @@ import { ExtractorRegistry } from "./models/extractor";
 import { BlockType, Book, BookExtractor, Clipping } from "./interfaces";
 import { updateToast } from "./utils";
 
-const domain = "amazon.com";
+const page = "https://read.amazon.com/notebook";
 const extractAmazon: BookExtractor = () => {
   try {
     const title = document.querySelector(
@@ -94,4 +94,4 @@ const extractAmazon: BookExtractor = () => {
   return undefined;
 };
 
-ExtractorRegistry.register(domain, extractAmazon);
+ExtractorRegistry.register(page, extractAmazon);

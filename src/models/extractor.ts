@@ -1,19 +1,24 @@
 import { BookExtractor } from "../interfaces";
+import { updateToast } from "../utils";
 
 export namespace ExtractorRegistry {
-  interface IExtractorMap {
-    [key: string]: BookExtractor
-  }
+  
+  let extractors: {page: string, extractor: BookExtractor}[] = [];
 
-  let extractors: IExtractorMap = {};
-
-  export function register(domain: string, extractor: BookExtractor) { 
-    extractors[domain] = extractor
+  export function register(page: string, extractor: BookExtractor) { 
+    extractors.push({page, extractor});
   };
   
   export function extract(){
-    const domain = window.location.hostname.split('.').slice(3).join('.');
-    let extractor = extractors[domain];
+    const hostname = window.location.hostname;
+    const extractor = extractors.find(e => e.page.includes(hostname))?.extractor;
+    if(extractor == undefined){
+      updateToast("Goto:<br>");
+      extractors.forEach( (_, page) => {
+        updateToast(`<a href="${page}"/><br>`);
+      });
+      return undefined;
+    }
     return extractor();
   }
 }
