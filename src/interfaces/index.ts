@@ -8,3 +8,4 @@ export {
   CreatePageProperties,
   UpdatePageParams
 } from "./notion";
+export { BookExtractor } from "./extractor";

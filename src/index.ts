@@ -1,13 +1,13 @@
-import { extractBook, parseBook, Notion } from "./models";
+import { ExtractorRegistry, parseBook, Notion } from "./models";
 import { showToast, updateToast } from "./utils";
 
-export async function writeHighlightsToNotion(apiKey: string, bookDbId: string) {
+export async function writeHighlightsToNotion(apiKey: string, bookDbId: string, baseUrl?: string) {
 
   showToast("");
 
-  const notion = new Notion(apiKey, bookDbId);
+  const notion = new Notion(apiKey, bookDbId, baseUrl);
 
-  const book = extractBook();
+  const book = ExtractorRegistry.extract();
   const clippings = parseBook(book);
   if (clippings != undefined) {
     await notion.syncHighlights(clippings);

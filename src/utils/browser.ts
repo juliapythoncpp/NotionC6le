@@ -7,7 +7,7 @@ export const showToast = (content: string, delayMs?: number, id: string = toastI
   toast.classList.add(taggingClass);
   toast.innerHTML = content;
   toast.setAttribute('style',
-    "min-width: 250px; margin-left: -40px; background-color: #4448; color: #f22;text-align: center; border-radius: 10px; padding: 30px; position: fixed; z-index: 1; left: 50%; top: 30px;font-size: 16px;");
+    "min-width: 250px; margin-left: -40px; background-color: #4448; color: #ddd;text-align: center; border-radius: 10px; padding: 30px; position: fixed; z-index: 1; left: 50%; top: 30px;font-size: 16px;");
   document.body.appendChild(toast);
   if(delayMs != undefined){
     setTimeout(function () {
@@ -29,5 +29,6 @@ export const updateToast = (content: string, append: boolean = true, id: string 
 export const cleanup = () => {
   document.querySelectorAll('.' + taggingClass).forEach(el => {
     el.remove();
-  })
+  });
+  document.getElementById("BOOKMARKLETSCRIPTTAG")?.remove();
 }

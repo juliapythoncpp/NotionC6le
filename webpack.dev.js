@@ -8,6 +8,6 @@ module.exports = merge(common, {
     static: "./dist",
   },
   output: {
-    filename: "highlightsToNotion.dev.js",
+    filename: "[name].dev.js",
   }
 });

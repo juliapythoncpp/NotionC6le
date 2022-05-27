@@ -1,21 +1,9 @@
-import { BlockType, Book, Clipping } from "../interfaces";
-import { updateToast } from "../utils";
+import { ExtractorRegistry } from "./models/extractor";
+import { BlockType, Book, BookExtractor, Clipping } from "./interfaces";
+import { updateToast } from "./utils";
 
-enum Urls {
-  Amazon = "https://read.amazon.com/notebook",
-  GooglePlay = "https://play.google.com"
-}
-
-export const extractBook = () => {
-  const url = window.location.href
-  if(url == Urls.Amazon.valueOf()){
-    return extractAmazon()
-  }else {
-    return undefined;
-  }
-};
-
-const extractAmazon = () => {
+const domain = "amazon.com";
+const extractAmazon: BookExtractor = () => {
   try {
     const title = document.querySelector(
       "#annotation-scroller > div > div.a-row.a-spacing-base > div.a-column.a-span5 > h3"
@@ -54,7 +42,7 @@ const extractAmazon = () => {
         color = "gray";
       }
       let blockType: BlockType;
-      switch(color) {
+      switch (color) {
         case "yellow":
           blockType = BlockType.bulleted_list_item;
           color = "default";
@@ -76,7 +64,7 @@ const extractAmazon = () => {
           color = "red_background";
       }
 
-      const clip : Clipping = {
+      const clip: Clipping = {
         type: blockType,
         location: loc,
         color: color!,
@@ -105,3 +93,5 @@ const extractAmazon = () => {
 
   return undefined;
 };
+
+ExtractorRegistry.register(domain, extractAmazon);

@@ -13,8 +13,8 @@ export class Notion {
   private notion;
   private bookDbId : string;
 
-  constructor(apiKey: string, bookDbId: string) {
-    this.notion = new NotionAdapter(apiKey);
+  constructor(apiKey: string, bookDbId: string, baseUrl?: string) {
+    this.notion = new NotionAdapter(apiKey, baseUrl);
     this.bookDbId = bookDbId;
   }
 
