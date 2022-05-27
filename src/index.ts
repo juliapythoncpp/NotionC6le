@@ -1,6 +1,8 @@
 import { ExtractorRegistry, parseBook, Notion } from "./models";
 import { showToast, updateToast } from "./utils";
 
+import "./amazonExtractor";
+
 export async function writeHighlightsToNotion(apiKey: string, bookDbId: string, baseUrl?: string) {
 
   showToast("");
